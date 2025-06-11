@@ -673,7 +673,9 @@ const App = () => {
               </CardContent>
             </Card>
           </div>
+          <p className='text-center text-gray-800 mt-10'>Sources : <a href="https://www.iea.org/reports/energy-and-ai/energy-demand-from-ai">Energy demand from AI</a></p>
         </div>
+        
       </section>
 
       {/* Footer */}
