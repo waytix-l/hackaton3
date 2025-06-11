@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { Progress } from './components/ui/progress';
@@ -15,55 +15,81 @@ import aiImage2 from './assets/ai_image_2.png';
 import aiImage3 from './assets/ai_image_3.png';
 import aiImage4 from './assets/ai_image_4.png';
 
-// Hook pour l'animation de comptage
-const useCountUp = (end, duration = 2000, delay = 0) => {
-  const [count, setCount] = useState(0);
-  const [hasStarted, setHasStarted] = useState(false);
+// Hook pour l'animation de comptage depuis la valeur précédente
+const useCountUp = (targetValue, duration = 2000, delay = 0) => {
+  const [displayValue, setDisplayValue] = useState(targetValue);
+  const previousValue = useRef(targetValue);
+  const animationRef = useRef(null);
 
   useEffect(() => {
+    // Si c'est la première fois, on affiche directement la valeur
+    if (previousValue.current === targetValue) {
+      setDisplayValue(targetValue);
+      return;
+    }
+
+    const startValue = previousValue.current;
+    const endValue = targetValue;
+    
+    // Annuler l'animation précédente si elle existe
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
     const timer = setTimeout(() => {
-      setHasStarted(true);
+      let startTime;
+      
+      const animate = (currentTime) => {
+        if (!startTime) startTime = currentTime;
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+        
+        // Interpolation entre l'ancienne et la nouvelle valeur
+        const currentValue = startValue + (endValue - startValue) * progress;
+        
+        if (typeof targetValue === 'number') {
+          setDisplayValue(Math.round(currentValue));
+        } else {
+          setDisplayValue(currentValue);
+        }
+        
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(animate);
+        } else {
+          setDisplayValue(endValue);
+          previousValue.current = endValue;
+        }
+      };
+      
+      animationRef.current = requestAnimationFrame(animate);
     }, delay);
 
-    return () => clearTimeout(timer);
-  }, [delay]);
-
-  useEffect(() => {
-    if (!hasStarted) return;
-
-    let startTime;
-    const animate = (currentTime) => {
-      if (!startTime) startTime = currentTime;
-      const progress = Math.min((currentTime - startTime) / duration, 1);
-      
-      if (typeof end === 'number') {
-        setCount(Math.floor(progress * end));
-      } else {
-        setCount((progress * parseFloat(end)).toFixed(1));
-      }
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        setCount(end);
+    return () => {
+      clearTimeout(timer);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
       }
     };
-    
-    requestAnimationFrame(animate);
-  }, [end, duration, hasStarted]);
+  }, [targetValue, duration, delay]);
 
-  return count;
+  // Mettre à jour la valeur précédente quand le composant se démonte ou que la valeur change
+  useEffect(() => {
+    return () => {
+      previousValue.current = displayValue;
+    };
+  }, [displayValue]);
+
+  return displayValue;
 };
 
 // Composant pour les chiffres animés
-const AnimatedCounter = ({ value, suffix = '', prefix = '', decimals = 0, duration = 2000, delay = 0 }) => {
+const AnimatedCounter = ({ value, suffix = '', prefix = '', decimals = 0, duration = 1500, delay = 0 }) => {
   const animatedValue = useCountUp(value, duration, delay);
   
   const formatValue = (val) => {
     if (typeof val === 'number') {
       return decimals > 0 ? val.toFixed(decimals) : Math.floor(val).toLocaleString('fr-FR');
     }
-    return val;
+    return parseFloat(val).toFixed(decimals);
   };
   
   return (
@@ -90,7 +116,6 @@ const App = () => {
 
   // State for the calculator
   const [numPeople, setNumPeople] = useState(1);
-  const [hoursPerDay, setHoursPerDay] = useState(1);
   const [daysPerWeek, setDaysPerWeek] = useState(1);
   const [calculatedConsumption, setCalculatedConsumption] = useState({
     water: 0,
@@ -102,33 +127,33 @@ const App = () => {
     { 
       id: 1, 
       src: aiImage1, 
-      consumption: '50 Wh', 
-      water: '25 L',
-      co2: '10 g',
+      consumption: '50',
+      water: '25',
+      co2: '10',
       description: 'Paysage futuriste' 
     },
     { 
       id: 2, 
       src: aiImage2, 
-      consumption: '35 Wh', 
-      water: '18 L',
-      co2: '7 g',
+      consumption: '35',
+      water: '18',
+      co2: '7',
       description: 'Visage abstrait de circuits' 
     },
     { 
       id: 3, 
       src: aiImage3, 
-      consumption: '60 Wh', 
-      water: '30 L',
-      co2: '12 g',
+      consumption: '60',
+      water: '30',
+      co2: '12',
       description: 'Forêt mystique' 
     },
     { 
       id: 4, 
       src: aiImage4, 
-      consumption: '40 Wh', 
-      water: '20 L',
-      co2: '8 g',
+      consumption: '40',
+      water: '20',
+      co2: '8',
       description: 'Robot et plante' 
     },
   ];
@@ -235,7 +260,7 @@ const App = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Calculator logic
+  // Calculator logic (simplifié sans heures par jour)
   useEffect(() => {
     const calculateConsumption = () => {
       const promptsPerPersonPerDay = 10;
@@ -243,7 +268,7 @@ const App = () => {
       const co2PerPrompt = 2;
       const energyPerPrompt = 2;
 
-      const totalPrompts = numPeople * promptsPerPersonPerDay * hoursPerDay * daysPerWeek;
+      const totalPrompts = numPeople * promptsPerPersonPerDay * daysPerWeek;
 
       const totalWater = totalPrompts * waterPerPrompt;
       const totalCo2 = totalPrompts * co2PerPrompt;
@@ -256,7 +281,7 @@ const App = () => {
       });
     };
     calculateConsumption();
-  }, [numPeople, hoursPerDay, daysPerWeek]);
+  }, [numPeople, daysPerWeek]);
 
   const handleQuizAnswer = (answerIndex) => {
     const newAnswers = [...selectedAnswers];
@@ -339,16 +364,6 @@ const App = () => {
             Découvrez en temps réel la consommation énergétique de l'intelligence artificielle 
             et son impact sur notre planète. Agissons ensemble pour un avenir numérique durable.
           </p>
-          <div className="flex justify-center gap-3 sm:gap-4 lg:gap-6 flex-wrap animate-fade-in-up delay-200 px-4">
-            <Badge variant="secondary" className="text-sm sm:text-lg lg:text-xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-green-600 text-white shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 cursor-pointer">
-              <Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-              Données en temps réel
-            </Badge>
-            <Badge variant="outline" className="text-sm sm:text-lg lg:text-xl px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-green-700 border-green-700 shadow-lg hover:bg-green-50 transition-all duration-300 transform hover:scale-105 cursor-pointer">
-              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-              Statistiques interactives
-            </Badge>
-          </div>
         </div>
       </section>
 
@@ -363,7 +378,7 @@ const App = () => {
               <CardTitle className="text-gray-800 text-xl sm:text-2xl text-center lg:text-left">Estimez l'impact de l'IA sur votre consommation</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8 max-w-2xl mx-auto">
                 <div>
                   <Label htmlFor="numPeople" className="text-base sm:text-lg font-medium text-gray-700">Nombre de personnes</Label>
                   <Input 
@@ -375,17 +390,7 @@ const App = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="hoursPerDay" className="text-base sm:text-lg font-medium text-gray-700">Heures d'utilisation par jour</Label>
-                  <Input 
-                    id="hoursPerDay" 
-                    type="number" 
-                    value={hoursPerDay} 
-                    onChange={(e) => setHoursPerDay(Math.max(1, parseInt(e.target.value) || 1))} 
-                    className="mt-2 p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-                  />
-                </div>
-                <div className="sm:col-span-2 lg:col-span-1">
-                  <Label htmlFor="daysPerWeek" className="text-base sm:text-lg font-medium text-gray-700">Jours d'utilisation par semaine</Label>
+                  <Label htmlFor="daysPerWeek" className="text-base sm:text-lg font-medium text-gray-700">Jours d'utilisation</Label>
                   <Input 
                     id="daysPerWeek" 
                     type="number" 
@@ -402,7 +407,7 @@ const App = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-800">
-                      <AnimatedCounter value={calculatedConsumption.water} suffix=" L" />
+                      <AnimatedCounter value={calculatedConsumption.water} suffix=" L" duration={800} />
                     </p>
                   </CardContent>
                 </Card>
@@ -412,7 +417,7 @@ const App = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-800">
-                      <AnimatedCounter value={calculatedConsumption.co2} suffix=" g" />
+                      <AnimatedCounter value={calculatedConsumption.co2} suffix=" g" duration={800} />
                     </p>
                   </CardContent>
                 </Card>
@@ -422,7 +427,7 @@ const App = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-800">
-                      <AnimatedCounter value={calculatedConsumption.energy} suffix=" Wh" />
+                      <AnimatedCounter value={calculatedConsumption.energy} suffix=" Wh" duration={800} />
                     </p>
                   </CardContent>
                 </Card>
@@ -455,8 +460,7 @@ const App = () => {
                     value={currentStats.energyConsumption} 
                     suffix=" TWh" 
                     decimals={1}
-                    duration={1500}
-                    delay={200}
+                    duration={1000}
                   />
                 </div>
                 <Progress value={75} className="h-2 bg-white/20" />
@@ -477,8 +481,7 @@ const App = () => {
                     value={currentStats.co2Emissions} 
                     suffix=" Mt" 
                     decimals={1}
-                    duration={1500}
-                    delay={400}
+                    duration={1000}
                   />
                 </div>
                 <Progress value={60} className="h-2 bg-white/20" />
@@ -497,8 +500,7 @@ const App = () => {
                 <div className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
                   <AnimatedCounter 
                     value={currentStats.aiRequests} 
-                    duration={1500}
-                    delay={600}
+                    duration={1000}
                   />
                 </div>
                 <Progress value={85} className="h-2 bg-white/20" />
@@ -519,8 +521,7 @@ const App = () => {
                     value={currentStats.waterConsumption} 
                     suffix=" Md L" 
                     decimals={1}
-                    duration={1500}
-                    delay={800}
+                    duration={1000}
                   />
                 </div>
                 <Progress value={70} className="h-2 bg-white/20" />
@@ -647,10 +648,10 @@ const App = () => {
                   </div>
                   <div className="flip-card-back bg-green-600 text-white flex items-center justify-center rounded-lg p-3 sm:p-4">
                     <div className="text-center">
-                      <p className="text-sm sm:text-lg mb-2">Consommation pour la génération :</p>
-                      <p className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1">{image.consumption}</p>
-                      <p className="text-base sm:text-xl mb-1">{image.water}</p>
-                      <p className="text-base sm:text-xl">{image.co2}</p>
+                      <p className="text-base sm:text-lg mb-3 font-medium">Consommation pour la génération :</p>
+                      <p className="text-lg sm:text-xl font-medium mb-2">{image.consumption} Wh d'électricité</p>
+                      <p className="text-lg sm:text-xl font-medium mb-2">{image.water} L d'eau</p>
+                      <p className="text-lg sm:text-xl font-medium">{image.co2} g de CO2</p>
                     </div>
                   </div>
                 </div>
