@@ -1,0 +1,245 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #FFFFFF; /* Blanc */
+  --foreground: #1A365D; /* Bleu foncé pour le texte */
+  --card: #F0FDF4; /* Vert très clair pour les cartes */
+  --card-foreground: #1A365D;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A365D;
+  --primary: #4CAF50; /* Vert primaire */
+  --primary-foreground: #FFFFFF;
+  --secondary: #E8F5E9; /* Vert secondaire très clair */
+  --secondary-foreground: #1A365D;
+  --muted: #E0E0E0;
+  --muted-foreground: #757575;
+  --accent: #81C784; /* Vert accent */
+  --accent-foreground: #1A365D;
+  --destructive: #EF5350;
+  --border: #E0E0E0;
+  --input: #E0E0E0;
+  --ring: #4CAF50;
+  --chart-1: #4CAF50;
+  --chart-2: #8BC34A;
+  --chart-3: #CDDC39;
+  --chart-4: #FFEB3B;
+  --chart-5: #FFC107;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A365D;
+  --sidebar-primary: #4CAF50;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E8F5E9;
+  --sidebar-accent-foreground: #1A365D;
+  --sidebar-border: #E0E0E0;
+  --sidebar-ring: #4CAF50;
+}
+
+.dark {
+  --background: #1A365D;
+  --foreground: #FFFFFF;
+  --card: #2C3E50;
+  --card-foreground: #FFFFFF;
+  --popover: #2C3E50;
+  --popover-foreground: #FFFFFF;
+  --primary: #81C784;
+  --primary-foreground: #1A365D;
+  --secondary: #4CAF50;
+  --secondary-foreground: #FFFFFF;
+  --muted: #4CAF50;
+  --muted-foreground: #BDBDBD;
+  --accent: #4CAF50;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF5350;
+  --border: #424242;
+  --input: #424242;
+  --ring: #81C784;
+  --chart-1: #4CAF50;
+  --chart-2: #8BC34A;
+  --chart-3: #CDDC39;
+  --chart-4: #FFEB3B;
+  --chart-5: #FFC107;
+  --sidebar: #1A365D;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #81C784;
+  --sidebar-primary-foreground: #1A365D;
+  --sidebar-accent: #4CAF50;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #424242;
+  --sidebar-ring: #81C784;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+
+
+
+/* Styles pour la section Galerie d'Images IA */
+.flip-card {
+  background-color: transparent;
+  perspective: 1000px; /* Supprimez ceci si vous ne voulez pas l'effet 3D */
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden; /* Safari */
+  backface-visibility: hidden;
+  border-radius: 0.5rem;
+}
+
+.flip-card-front {
+  background-color: #bbb;
+  color: black;
+}
+
+.flip-card-back {
+  background-color: #4CAF50;
+  color: white;
+  transform: rotateY(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+
+/* Styles pour le calculateur */
+.calculator-card .input-group {
+  margin-bottom: 1rem;
+}
+
+.calculator-card .input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.calculator-card .input-group input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+}
+
+.calculator-results .result-card {
+  text-align: center;
+}
+
+.calculator-results .result-card .value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #4CAF50; /* Green color */
+}
+
+.calculator-results .result-card .unit {
+  font-size: 1rem;
+  color: #666;
+}
+
+
+
+
+/* Animations */
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.6s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animate-counter {
+  transition: all 0.5s ease-out;
+}
+
+
